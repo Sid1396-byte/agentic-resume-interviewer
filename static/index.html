@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ResuMatch - Autonomous Career Engineering Engine</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://code.iconify.design/iconify-icon/3.0.0/iconify-icon.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/static/css/app.css" rel="stylesheet">
+</head>
+<body class="p-4 md:p-8 flex flex-col items-center">
+
+        
+    
+    <!-- Back to Home Button -->
+    <a href="/" class="absolute top-4 left-4 md:top-8 md:left-8 px-4 py-2 bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white rounded-lg text-sm font-medium transition-colors flex items-center gap-2 z-50 border border-slate-700 backdrop-blur-sm">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+        <span class="hidden md:inline">Back to Home</span>
+    </a>
+
+    <header class="w-full max-w-7xl mb-10 text-center pt-8 animate-slide-up" style="animation-delay: 0ms;">
+        <h1 class="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-violet-400 via-cyan-400 to-emerald-400 drop-shadow-sm tracking-tight animate-float inline-block">ResuMatch</h1>
+        <p class="text-slate-400 mt-3 text-lg font-light mb-6">Autonomous Career Engineering Engine</p>
+        
+        <!-- App Level Tabs -->
+        <div class="flex justify-center space-x-2 bg-slate-900/50 p-1.5 rounded-2xl inline-flex border border-slate-700/50">
+            <button class="app-tab active px-6 py-2.5 rounded-xl text-sm font-semibold text-white bg-violet-600/80 shadow-lg transition-all" data-target="app-resume">Resume Optimizer</button>
+            <button id="interviewTabBtn" class="app-tab px-6 py-2.5 rounded-xl text-sm font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition-all" data-target="app-interview">AI Mock Interview</button>
+        </div>
+    </header>
+
+    <div id="app-resume" class="w-full flex-grow flex flex-col items-center">
+        <main class="w-full max-w-7xl flex flex-col lg:flex-row gap-8 flex-grow">
+        <!-- Configuration Panel -->
+        <div class="glass-panel rounded-3xl p-8 flex-1 flex flex-col gap-8 w-full lg:w-1/3 animate-slide-up" style="animation-delay: 100ms;">
+            
+            <!-- API Keys (Now loaded securely from .env in backend) -->
+            <input type="hidden" id="apiKey" value="">
+            <input type="hidden" id="tavilyApiKey" value="">
+
+            <!-- Job Description -->
+            <div class="group">
+                <div class="flex justify-between items-center mb-3">
+                    <label class="block text-sm font-medium text-slate-300 tracking-wide group-hover:text-violet-400 transition-colors">Job Description</label>
+                    <div class="flex space-x-4 text-xs font-medium">
+                        <button class="input-tab jd-tab active pb-1 transition-all hover:text-violet-300" data-target="jd-url-container">URL</button>
+                        <button class="input-tab jd-tab pb-1 transition-all text-slate-500 hover:text-violet-300" data-target="jd-text-container">Paste Text</button>
+                    </div>
+                </div>
+                <div id="jd-url-container" class="transition-all">
+                    <input type="url" id="jdUrl" class="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl p-3 text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none transition-all placeholder-slate-600 shadow-inner" placeholder="https://...">
+                </div>
+                <div id="jd-text-container" class="hidden transition-all">
+                    <textarea id="jdText" class="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl p-3 text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none h-32 resize-y transition-all placeholder-slate-600 shadow-inner" placeholder="Paste full Job Description here..."></textarea>
+                </div>
+            </div>
+
+            <!-- Base Resume -->
+            <div class="group">
+                <div class="flex justify-between items-center mb-3">
+                    <label class="block text-sm font-medium text-slate-300 tracking-wide group-hover:text-violet-400 transition-colors">Base Resume</label>
+                    <div class="flex space-x-4 text-xs font-medium">
+                        <button class="input-tab resume-tab active pb-1 transition-all hover:text-violet-300" data-target="resume-upload-container">Upload File</button>
+                        <button class="input-tab resume-tab pb-1 transition-all text-slate-500 hover:text-violet-300" data-target="resume-text-container">Paste Text</button>
+                    </div>
+                </div>
+                <div id="resume-upload-container" class="transition-all">
+                    <input type="file" id="resumeFile" accept=".pdf,.doc,.docx" class="w-full text-sm text-slate-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-violet-600/20 file:text-violet-300 hover:file:bg-violet-600/40 cursor-pointer border border-slate-700/50 rounded-xl p-2 bg-slate-900/50 shadow-inner transition-all hover:border-violet-500/50">
+                </div>
+                <div id="resume-text-container" class="hidden transition-all">
+                    <textarea id="baseResumeText" class="w-full bg-slate-900/50 border border-slate-700/50 rounded-xl p-3 text-sm focus:ring-2 focus:ring-violet-500 focus:outline-none h-32 resize-y transition-all placeholder-slate-600 shadow-inner" placeholder="Paste your current resume here..."></textarea>
+                </div>
+            </div>
+
+            <button id="startBtn" class="btn-glow w-full bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white font-semibold py-3.5 px-4 rounded-xl shadow-lg hover:shadow-violet-500/50 transition-all transform active:scale-[0.98]">
+                Start Tailoring
+            </button>
+        </div>
+
+        <!-- Right Side: Results & Logs -->
+        <div class="flex-[2] flex flex-col gap-6 w-full lg:w-2/3">
+            
+            <!-- Result Panel -->
+            <div class="glass-panel rounded-3xl flex flex-col flex-grow min-h-[550px] overflow-hidden animate-slide-up relative" style="animation-delay: 200ms;">
+                
+                <!-- Result Tabs Header -->
+                <div class="flex border-b border-slate-700/50 bg-slate-900/30 items-center">
+                    <button class="result-tab active flex-1 py-4 text-sm font-semibold text-slate-400 border-b-2 border-transparent transition-all hover:bg-slate-800/50" data-target="panel-draft">Tailored Draft</button>
+                    <button class="result-tab flex-1 py-4 text-sm font-semibold text-slate-400 border-b-2 border-transparent transition-all hover:bg-slate-800/50" data-target="panel-gap">Gap Analysis</button>
+                    <button id="downloadPdfBtn" class="hidden mx-4 text-xs font-semibold bg-violet-600 hover:bg-violet-500 text-white py-1.5 px-4 rounded-full shadow-lg transition-all transform hover:scale-105 flex items-center gap-2">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        Export PDF
+                    </button>
+                </div>
+                
+                <!-- Draft Panel -->
+                <div id="panel-draft" class="p-8 flex-grow overflow-y-auto relative flex flex-col">
+                    
+                    <!-- ATS Meter (Hidden initially) -->
+                    <div id="ats-meter-container" class="hidden w-full flex justify-center mb-6 animate-fade-in border-b border-slate-700/50 pb-6">
+                        <div class="flex items-center gap-8 bg-slate-900/50 p-6 rounded-2xl border border-slate-700/50">
+                            <div class="w-24 h-24">
+                                <svg viewBox="0 0 36 36" class="circular-chart">
+                                    <path class="circle-bg" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <path id="ats-circle" class="circle ats-green" stroke-dasharray="0, 100" d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" />
+                                    <text id="ats-text" x="18" y="20.35" class="percentage">0%</text>
+                                </svg>
+                            </div>
+                            <div>
+                                <h3 class="text-xl font-bold text-white mb-1">ATS Match Score</h3>
+                                <p id="ats-desc" class="text-sm text-slate-400">Analyzing compatibility...</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div id="preview" class="markdown-preview text-slate-200">
+                        <div class="flex items-center justify-center h-full pt-20 animate-fade-in">
+                            <p class="text-slate-500 text-lg font-light flex items-center gap-3">
+                                <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                The tailored resume will appear here...
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Gap Analysis Panel -->
+                <div id="panel-gap" class="p-8 flex-grow overflow-y-auto hidden">
+                    <div id="gap-content" class="flex flex-col gap-8 h-full">
+                        <div class="flex items-center justify-center h-full pt-20" id="gap-placeholder">
+                            <p class="text-slate-500 text-lg font-light flex items-center gap-3">
+                                <svg class="w-6 h-6 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                                Gap Analysis will run before drafting...
+                            </p>
+                        </div>
+                        
+                        <div id="gap-results" class="hidden grid grid-cols-1 md:grid-cols-2 gap-8">
+                            <div class="bg-slate-900/40 border border-emerald-900/30 rounded-2xl p-6">
+                                <h3 class="text-emerald-400 font-semibold text-lg mb-4 flex items-center gap-2">
+                                    <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                                    Matched Requirements
+                                </h3>
+                                <div id="gap-green-list" class="flex flex-wrap gap-2"></div>
+                            </div>
+                            <div class="bg-slate-900/40 border border-rose-900/30 rounded-2xl p-6">
+                                <h3 class="text-rose-400 font-semibold text-lg mb-2 flex items-center gap-2">
+                                    <svg class="w-5 h-5 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                                    Missing Requirements
+                                </h3>
+                                <p class="text-[11px] text-slate-400 mb-4 bg-rose-900/20 p-2 rounded border border-rose-900/30">Click on any missing skill to get a quick AI Study Guide for your interview!</p>
+                                <div id="gap-red-list" class="flex flex-wrap gap-2"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Logs Panel -->
+            <div class="glass-panel rounded-3xl p-4 flex flex-col animate-slide-up" style="animation-delay: 300ms;">
+                <button onclick="document.getElementById('logsContainer').classList.toggle('hidden'); document.getElementById('logChevron').classList.toggle('-rotate-180');" class="flex items-center justify-between w-full px-2 hover:opacity-80 transition-opacity outline-none">
+                    <div class="flex items-center gap-2">
+                        <div class="w-2 h-2 rounded-full bg-violet-400 animate-pulse" style="box-shadow: 0 0 8px #a78bfa;"></div>
+                        <h2 class="text-xs font-bold text-slate-400 uppercase tracking-widest">Agent Execution Logs</h2>
+                    </div>
+                    <svg id="logChevron" class="w-4 h-4 text-slate-500 transform transition-transform duration-200" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+                <div id="logsContainer" class="hidden mt-3 h-48">
+                    <div id="logs" class="bg-slate-950/80 rounded-xl p-4 font-mono text-[11px] text-violet-300 overflow-y-auto h-full whitespace-pre-wrap border border-slate-800 shadow-inner">System idle. Waiting for configuration...</div>
+                </div>
+            </div>
+
+        </div>
+    </main>
+    </div> <!-- End app-resume -->
+
+    <!-- AI Mock Interview View -->
+    <div id="app-interview" class="w-full max-w-7xl flex-grow hidden flex-col animate-fade-in gap-6 relative">
+        <!-- Background subtle gradient -->
+        <div class="absolute inset-0 bg-gradient-to-br from-cyan-950/20 via-transparent to-violet-950/20 pointer-events-none -z-10 rounded-3xl"></div>
+
+        <!-- Header -->
+        <header class="w-full flex items-center justify-between bg-[#0B1120] border border-slate-800/50 px-6 py-4 rounded-2xl shrink-0 shadow-lg">
+            <div class="flex items-center gap-4">
+                <button onclick="document.querySelector('[data-target=\'app-resume\']').click();" class="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-slate-700 transition-colors text-slate-300">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                </button>
+                <div>
+                    <h1 class="text-xl font-bold text-white tracking-tight">Mock Interview: Frontend Developer</h1>
+                    <p class="text-xs text-slate-400 mt-1 flex items-center gap-2">
+                        <span id="status-dot" class="w-2 h-2 rounded-full bg-slate-500"></span>
+                        <span id="status-text">Disconnected</span>
+                    </p>
+                </div>
+            </div>
+            
+            <div class="flex items-center gap-3">
+                <span id="interviewWarning" class="text-rose-400 text-xs font-medium px-3 bg-rose-900/20 py-1.5 rounded-lg border border-rose-800/30">Please fill JD and Resume</span>
+                <button onclick="document.getElementById('settingsModal').classList.remove('hidden');" class="px-5 py-2.5 bg-slate-800/80 hover:bg-slate-700 text-slate-300 rounded-xl font-medium flex items-center gap-2 transition-colors text-sm border border-slate-700/50 shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Settings
+                </button>
+                <button id="startInterviewBtn" class="px-5 py-2.5 bg-gradient-to-r from-violet-600 to-cyan-600 hover:from-violet-500 hover:to-cyan-500 text-white rounded-xl font-medium flex items-center gap-2 transition-all shadow-lg hover:shadow-violet-500/50 text-sm opacity-50 cursor-not-allowed" disabled>
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Start Interview
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="flex-1 flex flex-col md:flex-row gap-4 min-h-[650px] h-[75vh]">
+
+            
+            <!-- LEFT COLUMN: Video & Visuals (65% width) -->
+            <div class="w-full md:w-[65%] flex flex-col gap-4 h-full">
+                
+                <!-- Video Stage Area -->
+                <div class="flex-1 bg-[#0B1120] border border-slate-800/50 rounded-3xl relative overflow-hidden flex flex-col items-center justify-center shadow-lg">
+                    <!-- Decorative background elements -->
+                    <div class="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjIiIGZpbGw9InJnYmEoMjU1LDI1NSwyNTUsMC4wMykiLz48L3N2Zz4=')] opacity-50 z-0"></div>
+                    
+                    <!-- Main Area (User Webcam) -->
+                    <div class="absolute inset-0 z-10 flex flex-col items-center w-full h-full justify-center text-slate-500">
+                        <video id="webcamVideo" class="w-full h-full object-cover transform scale-x-[-1]" autoplay muted playsinline></video>
+                        <div id="webcamOverlay" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/80">
+                            <svg class="w-16 h-16 mb-4 opacity-50 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                            <div class="text-xl font-medium text-slate-400 tracking-wide">Waiting for Camera...</div>
+                        </div>
+                    </div>
+
+                    <!-- Floating PiP (AI Interviewer) -->
+                    <div class="absolute top-6 right-6 w-48 h-36 bg-slate-900 rounded-2xl border-2 border-slate-700 shadow-2xl overflow-hidden z-20 flex flex-col items-center justify-center">
+                        <div class="ai-core transform scale-50 -mt-2"></div>
+                        <div class="absolute bottom-2 right-2 bg-slate-950/80 backdrop-blur text-[10px] px-2 py-1 rounded text-cyan-300 font-medium border border-cyan-900/50">AI Interviewer</div>
+                    </div>
+
+                    <div id="videoControls" class="absolute bottom-8 left-1/2 -translate-x-1/2 glass-panel rounded-full px-6 py-3 flex items-center gap-4 z-20 border border-slate-700/50 shadow-2xl hidden">
+                        <button id="micBtn" class="w-12 h-12 rounded-full bg-slate-700/50 flex items-center justify-center hover:bg-slate-600 transition-colors">
+                            <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11a7 7 0 01-7 7m0 0a7 7 0 01-7-7m7 7v4m0 0H8m4 0h4m-4-8a3 3 0 01-3-3V5a3 3 0 116 0v6a3 3 0 01-3 3z"></path></svg>
+                        </button>
+                        
+                        <button id="cameraBtn" class="w-12 h-12 rounded-full bg-slate-700/50 flex items-center justify-center hover:bg-slate-600 transition-colors">
+                            <svg class="w-5 h-5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Bottom Panel: Context/Notes -->
+                <div class="h-40 bg-[#0B1120] border border-slate-800/50 rounded-2xl p-5 flex flex-col shrink-0 shadow-lg">
+                    <div class="flex items-center justify-between mb-3">
+                        <h2 class="text-sm font-semibold text-slate-300 flex items-center gap-2">
+                            <svg class="w-4 h-4 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                            Job Description Context
+                        </h2>
+                        <span class="text-xs text-slate-500 bg-slate-800/50 px-2 py-1 rounded-md">Extracted from Resume & JD</span>
+                    </div>
+                    <p id="jdContextText" class="text-sm text-slate-400 leading-relaxed overflow-y-auto pr-2">
+                        Waiting for interview to start...
+                    </p>
+                </div>
+            </div>
+
+            <!-- RIGHT COLUMN: Transcript / Question List (35% width) -->
+            <div class="w-full md:w-[35%] bg-[#0B1120] border border-slate-800/50 rounded-3xl flex flex-col overflow-hidden h-full shadow-lg">
+                <!-- Tabs -->
+                <div class="flex border-b border-slate-800/50 bg-[#060913]">
+                    <button id="tabTranscriptBtn" class="flex-1 py-4 text-sm font-semibold text-cyan-400 border-b-2 border-cyan-500 transition-colors w-full cursor-default">
+                        Live Transcript
+                    </button>
+                </div>
+
+                <!-- Scrollable Transcript -->
+                <div id="interviewTranscript" class="flex-1 overflow-y-auto p-8 space-y-4">
+                    <div class="text-center text-slate-500 mt-10">Click "Start Interview" to begin the simulation.</div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="glass-panel w-full max-w-md rounded-2xl overflow-hidden animate-fade-in shadow-2xl border border-slate-700/50 flex flex-col">
+            <div class="p-6 border-b border-slate-700/50 flex justify-between items-center bg-slate-900/50">
+                <h3 class="text-xl font-bold text-slate-200">Interview Settings</h3>
+                <button onclick="document.getElementById('settingsModal').classList.add('hidden')" class="text-slate-400 hover:text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 bg-slate-900/80">
+                <label class="block text-sm font-medium text-slate-300 mb-2">AI Voice</label>
+                <select id="voiceSelect" class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-3 text-slate-200 focus:outline-none focus:border-cyan-500 focus:ring-1 focus:ring-cyan-500 transition-all">
+                    <option value="Aoede">Aoede (Default)</option>
+                    <option value="Charon">Charon</option>
+                    <option value="Fenrir">Fenrir</option>
+                    <option value="Kore">Kore</option>
+                    <option value="Puck">Puck</option>
+                </select>
+                <p class="text-xs text-slate-500 mt-2">Select the voice model for the Gemini AI interviewer.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scorecard Modal -->
+    <div id="scorecardModal" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4 backdrop-blur-md">
+        <div class="glass-panel w-full max-w-3xl rounded-2xl overflow-hidden animate-fade-in shadow-2xl border border-slate-700/50 flex flex-col max-h-[90vh]">
+            <div class="p-6 border-b border-slate-700/50 flex justify-between items-center bg-slate-900/50">
+                <h3 class="text-xl font-bold text-slate-200 flex items-center gap-2">
+                    <svg class="w-6 h-6 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                    Interview Scorecard
+                </h3>
+                <button id="closeScorecardBtn" class="text-slate-400 hover:text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-8 overflow-y-auto bg-slate-900/80 flex-grow" id="scorecardContent">
+                <div id="scorecardLoading" class="flex flex-col items-center justify-center py-12">
+                    <div class="w-12 h-12 border-4 border-cyan-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+                    <p class="text-slate-300">Evaluating your interview performance...</p>
+                </div>
+                <div id="scorecardResults" class="hidden space-y-8">
+                    <!-- Score Ring -->
+                    <div class="flex justify-center">
+                        <div class="relative w-48 h-48 flex items-center justify-center rounded-full">
+                            <svg class="absolute inset-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
+                                <circle cx="50" cy="50" r="46" stroke="currentColor" stroke-width="8" fill="transparent" class="text-slate-800"></circle>
+                                <circle id="scoreCircle" cx="50" cy="50" r="46" stroke="currentColor" stroke-width="8" fill="transparent" class="text-emerald-500" stroke-dasharray="289" stroke-dashoffset="289" style="transition: stroke-dashoffset 1.5s ease-out;"></circle>
+                            </svg>
+                            <div class="text-center relative z-10">
+                                <div id="scoreValue" class="text-5xl font-black text-white">0</div>
+                                <div class="text-sm text-slate-400 font-medium tracking-widest uppercase mt-1">out of 100</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Feedback section -->
+                    <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
+                        <h4 class="text-sm font-bold text-slate-400 uppercase tracking-wider mb-3">Overall Feedback</h4>
+                        <p id="scoreFeedback" class="text-slate-300 leading-relaxed"></p>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div class="bg-emerald-900/20 rounded-xl p-6 border border-emerald-800/30">
+                            <h4 class="text-sm font-bold text-emerald-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 10h4.764a2 2 0 011.789 2.894l-3.5 7A2 2 0 0115.263 21h-4.017c-.163 0-.326-.02-.485-.06L7 20m7-10V5a2 2 0 00-2-2h-.095c-.5 0-.905.405-.905.905 0 .714-.211 1.412-.608 2.006L7 11v9m7-10h-2M7 20H5a2 2 0 01-2-2v-6a2 2 0 012-2h2.5"></path></svg>
+                                Strengths
+                            </h4>
+                            <ul id="scoreStrengths" class="space-y-3 text-emerald-100/80 text-sm list-disc list-inside"></ul>
+                        </div>
+                        <div class="bg-rose-900/20 rounded-xl p-6 border border-rose-800/30">
+                            <h4 class="text-sm font-bold text-rose-400 uppercase tracking-wider mb-4 flex items-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 14H5.236a2 2 0 01-1.789-2.894l3.5-7A2 2 0 018.736 3h4.018a2 2 0 01.485.06l3.76.94m-7 10v5a2 2 0 002 2h.096c.5 0 .905-.405.905-.904 0-.714.211-1.412.608-2.006L17 13V4m-7 10h2m5-10h2a2 2 0 012 2v6a2 2 0 01-2 2h-2.5"></path></svg>
+                                Areas for Improvement
+                            </h4>
+                            <ul id="scoreWeaknesses" class="space-y-3 text-rose-100/80 text-sm list-disc list-inside"></ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="p-4 bg-slate-900 border-t border-slate-700/50 flex justify-end">
+                <button id="doneScorecardBtn" class="bg-slate-700 hover:bg-slate-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Study Modal -->
+    <div id="studyModal" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-2xl rounded-2xl overflow-hidden animate-fade-in shadow-2xl border border-slate-700/50 flex flex-col max-h-[80vh]">
+            <div class="bg-slate-900/80 p-4 border-b border-slate-700/50 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-violet-300 flex items-center gap-2">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"></path></svg>
+                    Study Guide: <span id="studySkillName" class="text-white"></span>
+                </h3>
+                <button onclick="document.getElementById('studyModal').classList.add('hidden')" class="text-slate-400 hover:text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 overflow-y-auto" id="studyModalContent">
+                <div class="flex justify-center py-10">
+                    <svg class="w-8 h-8 animate-spin text-violet-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export PDF Modal -->
+    <div id="exportModal" class="fixed inset-0 modal-overlay hidden z-50 flex items-center justify-center p-4">
+        <div class="glass-panel w-full max-w-6xl rounded-2xl overflow-hidden animate-fade-in shadow-2xl border border-slate-700/50 flex flex-col h-[90vh]">
+            <div class="bg-slate-900/80 p-4 border-b border-slate-700/50 flex justify-between items-center">
+                <h3 class="text-lg font-bold text-white">Export to PDF with Live Preview</h3>
+                <button onclick="document.getElementById('exportModal').classList.add('hidden')" class="text-slate-400 hover:text-white transition-colors">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div class="p-6 flex flex-1 gap-6 min-h-0">
+                <!-- Left: Controls -->
+                <div class="w-1/3 flex flex-col h-full">
+                    <p class="text-sm text-slate-300 mb-4">Select a professional template. Sections will automatically adjust based on your content.</p>
+                    <div class="flex flex-col gap-3 flex-1 overflow-y-auto pr-2">
+                        <button class="tpl-select-btn active p-4 rounded-xl border-2 border-violet-500 bg-violet-500/20 text-left text-white font-medium text-sm transition-all" data-tpl="clean_minimalist">
+                            <span class="block text-base">Clean Minimalist</span>
+                            <span class="text-[11px] text-violet-300 font-normal">Centered headers, elegant lines</span>
+                        </button>
+                        <button class="tpl-select-btn p-4 rounded-xl border-2 border-slate-700 hover:border-violet-400 text-left text-slate-300 font-medium text-sm transition-all" data-tpl="structured_iconography">
+                            <span class="block text-base">Structured Iconography</span>
+                            <span class="text-[11px] text-slate-400 font-normal">Emojis and clear separation</span>
+                        </button>
+                        <button class="tpl-select-btn p-4 rounded-xl border-2 border-slate-700 hover:border-violet-400 text-left text-slate-300 font-medium text-sm transition-all" data-tpl="teal_sidebar">
+                            <span class="block text-base">Teal Sidebar</span>
+                            <span class="text-[11px] text-slate-400 font-normal">Modern two-column layout</span>
+                        </button>
+                        <button class="tpl-select-btn p-4 rounded-xl border-2 border-slate-700 hover:border-violet-400 text-left text-slate-300 font-medium text-sm transition-all" data-tpl="rust_red_accent">
+                            <span class="block text-base">Rust Red Accent</span>
+                            <span class="text-[11px] text-slate-400 font-normal">Classic academic with rust accents</span>
+                        </button>
+                        <button class="tpl-select-btn p-4 rounded-xl border-2 border-slate-700 hover:border-violet-400 text-left text-slate-300 font-medium text-sm transition-all" data-tpl="cse_academic">
+                            <span class="block text-base">Academic (CSE)</span>
+                            <span class="text-[11px] text-slate-400 font-normal">Strict departmental format</span>
+                        </button>
+                    </div>
+                    <button id="confirmDownloadBtn" class="w-full bg-violet-600 hover:bg-violet-500 text-white font-semibold py-3 mt-4 rounded-xl shadow-lg transition-all">
+                        Download PDF
+                    </button>
+                </div>
+                <!-- Right: Live Preview -->
+                <div class="w-2/3 bg-slate-200 rounded-xl overflow-y-auto shadow-inner flex justify-center items-start p-4 relative" style="overflow-x: hidden;">
+                    <div id="live-pdf-preview" class="w-[794px] h-[1123px] bg-white text-black shadow-lg origin-top scale-[0.65] transform-gpu mb-[-25%]">
+                        <!-- Preview renders here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden DOM for PDF Engine -->
+    <div id="pdf-export-container" class="absolute top-0 left-0 -z-50 opacity-0 pointer-events-none"></div>
+
+    <script type="module" src="/static/js/app.js"></script>
+
+    
+</body>
+</html>

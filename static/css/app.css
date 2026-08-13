@@ -1,0 +1,95 @@
+body { 
+            font-family: 'Outfit', sans-serif; 
+            background: radial-gradient(circle at top left, #1e1b4b, #0f172a 40%, #020617 100%); 
+            color: #f8fafc; 
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Custom Animations */
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes popIn { 0% { opacity: 0; transform: scale(0.85); } 70% { transform: scale(1.05); } 100% { opacity: 1; transform: scale(1); } }
+        @keyframes float { 0% { transform: translateY(0px); } 50% { transform: translateY(-8px); } 100% { transform: translateY(0px); } }
+        @keyframes pulseGlow { 0% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0.4); } 70% { box-shadow: 0 0 0 15px rgba(139, 92, 246, 0); } 100% { box-shadow: 0 0 0 0 rgba(139, 92, 246, 0); } }
+        @keyframes pulse-glow {
+            0% { transform: scale(0.95); box-shadow: 0 0 30px #8b5cf6, inset 0 0 20px rgba(255,255,255,0.5); }
+            100% { transform: scale(1.05); box-shadow: 0 0 60px #a78bfa, inset 0 0 30px rgba(255,255,255,0.8); }
+        }
+
+        .animate-slide-up { animation: slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards; opacity: 0; }
+        .animate-fade-in { animation: fadeIn 0.4s ease-out forwards; opacity: 0; }
+        .animate-float { animation: float 6s ease-in-out infinite; }
+        .badge-animate { animation: popIn 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards; opacity: 0; }
+        .btn-glow:hover { animation: pulseGlow 1.5s infinite; }
+        
+        /* The AI glowing orb animation */
+        .ai-core {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: radial-gradient(circle, #8b5cf6 0%, #4f46e5 100%);
+            box-shadow: 0 0 40px #8b5cf6, inset 0 0 20px rgba(255,255,255,0.5);
+            animation: pulse-glow 3s infinite alternate ease-in-out;
+        }
+        
+        /* Glass Panels */
+        .glass-panel { 
+            background: rgba(30, 41, 59, 0.4); 
+            backdrop-filter: blur(16px); 
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .glass-panel:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 35px 60px -15px rgba(0, 0, 0, 0.7);
+        }
+        
+        /* Interactive Input Fields */
+        input:focus, textarea:focus, select:focus {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 20px -2px rgba(139, 92, 246, 0.3);
+        }
+
+        .markdown-preview h1, .markdown-preview h2, .markdown-preview h3 { color: white; margin-top: 1.5rem; font-weight: 600; }
+        .markdown-preview strong, .markdown-preview b { color: #f8fafc; font-weight: bold; }
+        .markdown-preview h1 { font-size: 1.75rem; }
+        .markdown-preview h2 { font-size: 1.25rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.25rem; color: #93c5fd; transition: color 0.3s ease; }
+        .markdown-preview h2:hover { color: #a78bfa; }
+        .markdown-preview ul { padding-left: 1.5rem; list-style-type: disc; color: #cbd5e1; }
+        .markdown-preview li { margin-bottom: 0.5rem; transition: transform 0.2s ease; }
+        .markdown-preview li:hover { transform: translateX(4px); color: #f8fafc; }
+        
+        .input-tab.active { border-bottom: 2px solid #8b5cf6; color: #a78bfa; }
+        .result-tab.active { background: rgba(139, 92, 246, 0.2); color: #c4b5fd; border-color: rgba(139, 92, 246, 0.5); }
+        .transition-all { transition: all 0.3s ease; }
+        
+        /* Smooth Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); }
+        ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(139, 92, 246, 0.5); }
+
+        /* ATS Meter */
+        .circular-chart { display: block; margin: 0 auto; max-width: 80%; max-height: 250px; }
+        .circle-bg { fill: none; stroke: rgba(255, 255, 255, 0.1); stroke-width: 3.8; }
+        .circle { fill: none; stroke-width: 2.8; stroke-linecap: round; transition: stroke-dasharray 1.5s ease-out; }
+        .percentage { fill: #fff; font-family: 'Outfit', sans-serif; font-size: 0.5em; text-anchor: middle; font-weight: bold; }
+        .ats-green { stroke: #10b981; }
+        .ats-yellow { stroke: #f59e0b; }
+        .ats-red { stroke: #ef4444; }
+        
+        /* Modal Overlay */
+        .modal-overlay { background: rgba(0,0,0,0.7); backdrop-filter: blur(5px); }
+
+        /* PDF Export Container - Hidden from View but used for rendering */
+        #pdf-export-container {
+            position: absolute;
+            left: -9999px;
+            top: 0;
+            background: white;
+            color: black;
+            width: 800px;
+        }
+        .pdf-mode * { color: black !important; }

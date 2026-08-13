@@ -1,0 +1,12 @@
+fastapi
+uvicorn
+websockets
+google-genai
+python-docx
+pdfplumber
+beautifulsoup4
+requests
+python-dotenv
+tavily-python
+pydantic
+mcp

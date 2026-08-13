@@ -1,0 +1,16 @@
+version: '3.8'
+
+services:
+  resume-tailor:
+    image: ${ECR_REGISTRY}/${ECR_REPOSITORY}:${IMAGE_TAG:-latest}
+    container_name: resume-tailor
+    ports:
+      - "80:8080"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - TAVILY_API_KEY=${TAVILY_API_KEY}
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G

@@ -1,0 +1,21 @@
+# Git
+.git
+.gitignore
+
+# Environments
+.env
+venv/
+env/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+
+# Logs
+*.log
+debug.log
+
+# Caches
+.pytest_cache/
+.deepeval/
