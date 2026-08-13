@@ -329,7 +329,7 @@ Format your response in Markdown with these EXACT sections:
                         # We spawn the external MCP Server over stdio
                         server_params = StdioServerParameters(
                             command="python",
-                            args=["tavily_mcp.py"],
+                            args=["core/tavily_mcp.py"],
                             env={"TAVILY_API_KEY": tavily_key, **os.environ}
                         )
                         async with stdio_client(server_params) as (read, write):
