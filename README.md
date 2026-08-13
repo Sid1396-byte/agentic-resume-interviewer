@@ -35,12 +35,12 @@ graph TD
     subgraph "2. Advanced Multi-Agent Tailoring Loop (Max 3 Iterations)"
         PreScreen -- "Passed" --> Matcher["Matcher Agent - Drafter<br/>(llama-3.3-70b-versatile via Groq)"]:::agent
         Matcher --> Critic["Critic Agent - Evaluator<br/>(gemini-3.6-flash)"]:::eval
-        Critic -- "Score < 100 / Hallucinations Detected" --> MandatoryDeletions["Inject Mandatory Deletions"]:::api
+        Critic -- "Score < 80 / Hallucinations Detected" --> MandatoryDeletions["Inject Mandatory Deletions"]:::api
         MandatoryDeletions --> Matcher
     end
 
     subgraph "3. Verification & Output"
-        Critic -- "Score 100 or Max Loops Reached" --> OutputGuardrail["Output Guardrail Agent<br/>(gemini-3.1-flash-lite)"]:::guardrail
+        Critic -- "Score >= 80 or Max Loops Reached" --> OutputGuardrail["Output Guardrail Agent<br/>(gemini-3.1-flash-lite)"]:::guardrail
         OutputGuardrail -- "Safe" --> FinalDraft["Final Verified Resume Output"]:::output
         OutputGuardrail -- "Unsafe" --> Block2["Block Execution"]:::output
     end
@@ -49,11 +49,12 @@ graph TD
         FastAPI -.-> GapAnalyst["Gap Analyst Node<br/>(llama-3.3-70b-versatile via Groq)"]:::agent
         GapAnalyst --> GapUI["Gap Analysis UI Stream"]:::output
         GapUI -. "User clicks missing skill" .-> StudyAgent["Study Guide Agent<br/>(gemini-3.5-flash-lite)"]:::agent
+        StudyAgent --> TavilyMCP["Tavily MCP Server<br/>(Live Web Search)"]:::api
     end
 
     subgraph "5. Real-Time Interview Simulation"
-        UserInterview["User Joins WebRTC/WebSocket Session"]:::user --> Interviewer["AI Interviewer Agent<br/>(gemini-3.5-flash-lite)"]:::agent
-        FinalDraft -. "Feeds context to" .-> Interviewer
+        UserInterview["User Joins WebRTC/WebSocket Session"]:::user --> Interviewer["AI Interviewer Agent<br/>(gemini-3.1-flash-live-preview)"]:::agent
+        User["Base Resume & JD"] -. "Feeds context to" .-> Interviewer
         Interviewer --> LiveTranscript["Live Interview Transcript UI"]:::output
     end
 ```
@@ -74,11 +75,11 @@ The architecture deliberately distributes workloads across multiple specific mod
 - **GapAnalystAgent:** Runs in parallel to calculate the exact missing skills between the candidate and the JD.
 
 ### 3. The Strict Evaluator (`gemini-3.6-flash`)
-- **CriticAgent:** Uses Google's highly capable 3.6 Flash model to act as a ruthless grader. It scores the Matcher's draft out of 100. If it detects *any* hallucination or AI "fluff", it forces the Matcher to retry via strict `mandatory_deletions` arrays.
+- **CriticAgent:** Uses Google's highly capable 3.6 Flash model to act as a ruthless grader. It scores the Matcher's draft out of 100. If the score is below 80, or if it detects *any* hallucination/AI "fluff", it forces the Matcher to retry via strict `mandatory_deletions` arrays. (It is mathematically near-impossible to score a perfect 100 without hallucinating, so the target threshold is a highly rigorous 80+).
 
-### 4. Interactive Agents (`gemini-3.5-flash-lite`)
-- **InterviewerAgent:** Powers the mock interview. Uses a fast-response model to keep latency low while having a dynamic voice conversation with the user over WebSockets.
-- **StudyAgent:** Generates instantaneous study guides when a user clicks on a missing skill in their Gap Analysis.
+### 4. Interactive Agents
+- **InterviewerAgent (`gemini-3.1-flash-live-preview`):** Powers the mock interview. Driven by the new Gemini Live API (Bidi/WebRTC), this agent has a dynamic voice conversation with the user. **Note:** It explicitly uses the user's *original Base Resume and JD* as its context (not the drafted resume) to test the candidate's actual authentic knowledge.
+- **StudyAgent (`gemini-3.5-flash-lite` + MCP):** Generates instantaneous study guides when a user clicks on a missing skill in their Gap Analysis. It connects to a **Tavily MCP Server** over the Model Context Protocol to execute live web searches and fetch up-to-date documentation for the requested skill.
 
 ---
 
