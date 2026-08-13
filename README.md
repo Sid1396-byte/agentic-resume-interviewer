@@ -10,26 +10,75 @@ An enterprise-grade, multi-agent AI application designed to autonomously tailor 
 
 ---
 
-## 🏗️ System Architecture
+## 🏗️ System Architecture Flowchart
 
-The application is built on a modern, lightweight, and highly concurrent stack:
-- **Backend:** Python (FastAPI) for high-performance async routing and WebSocket management.
-- **Frontend:** Vanilla JavaScript and TailwindCSS for a highly responsive, zero-dependency SPA (Single Page Application).
-- **AI/LLM Layer:** Deep integration with Google Gemini 1.5 Flash (via official SDK) and Groq LLaMA models (via REST/requests) for ultra-fast inference.
-- **Orchestration:** Multi-agent loop utilizing explicit `Scratchpad` reasoning and independent `Critic` oversight.
-- **Infrastructure:** Dockerized with a security-first approach (non-root `appuser`) and orchestrated via `docker-compose`.
-- **CI/CD:** Fully automated GitHub Actions pipeline deploying to AWS (Elastic Container Registry -> EC2).
+Below is the deep architectural flow of the ResuMatch platform. Unlike standard monolithic LLM wrappers, this system utilizes a **Multi-Model, Multi-Agent Orchestration Engine**, routing specific tasks to the LLM best suited for the job (Groq LLaMA for high-speed drafting, Gemini Flash for strict critical evaluation and real-time voice).
+
+```mermaid
+graph TD
+    classDef user fill:#2d3748,stroke:#4a5568,stroke-width:2px,color:#fff
+    classDef api fill:#2b6cb0,stroke:#2c5282,stroke-width:2px,color:#fff
+    classDef agent fill:#4c51bf,stroke:#434190,stroke-width:2px,color:#fff
+    classDef guardrail fill:#c53030,stroke:#9b2c2c,stroke-width:2px,color:#fff
+    classDef eval fill:#b7791f,stroke:#975a16,stroke-width:2px,color:#fff
+    classDef output fill:#2f855a,stroke:#276749,stroke-width:2px,color:#fff
+
+    User["User Uploads Base Resume & JD"]:::user --> FastAPI["FastAPI Backend (Data Ingestion)"]:::api
+    
+    subgraph "1. Ingress & Security Validation"
+        FastAPI --> InputGuardrail["Input Guardrail Agent<br/>(gemini-3.1-flash-lite)"]:::guardrail
+        InputGuardrail -- "Malicious/Irrelevant" --> Block1["Block Execution"]:::output
+        InputGuardrail -- "Safe" --> PreScreen["Pre-Screen Agent<br/>(gemini-3.1-flash-lite)"]:::guardrail
+        PreScreen -- "Massive Reality Gap" --> Alert["Low Match Warning UI"]:::output
+    end
+
+    subgraph "2. Advanced Multi-Agent Tailoring Loop (Max 3 Iterations)"
+        PreScreen -- "Passed" --> Matcher["Matcher Agent - Drafter<br/>(llama-3.3-70b-versatile via Groq)"]:::agent
+        Matcher --> Critic["Critic Agent - Evaluator<br/>(gemini-3.6-flash)"]:::eval
+        Critic -- "Score < 100 / Hallucinations Detected" --> MandatoryDeletions["Inject Mandatory Deletions"]:::api
+        MandatoryDeletions --> Matcher
+    end
+
+    subgraph "3. Verification & Output"
+        Critic -- "Score 100 or Max Loops Reached" --> OutputGuardrail["Output Guardrail Agent<br/>(gemini-3.1-flash-lite)"]:::guardrail
+        OutputGuardrail -- "Safe" --> FinalDraft["Final Verified Resume Output"]:::output
+        OutputGuardrail -- "Unsafe" --> Block2["Block Execution"]:::output
+    end
+
+    subgraph "4. Background Telemetry & Study Engine"
+        FastAPI -.-> GapAnalyst["Gap Analyst Node<br/>(llama-3.3-70b-versatile via Groq)"]:::agent
+        GapAnalyst --> GapUI["Gap Analysis UI Stream"]:::output
+        GapUI -. "User clicks missing skill" .-> StudyAgent["Study Guide Agent<br/>(gemini-3.5-flash-lite)"]:::agent
+    end
+
+    subgraph "5. Real-Time Interview Simulation"
+        UserInterview["User Joins WebRTC/WebSocket Session"]:::user --> Interviewer["AI Interviewer Agent<br/>(gemini-3.5-flash-lite)"]:::agent
+        FinalDraft -. "Feeds context to" .-> Interviewer
+        Interviewer --> LiveTranscript["Live Interview Transcript UI"]:::output
+    end
+```
 
 ---
 
-## 🧠 Multi-Agent Workflow (The "Agentic Loop")
+## 🤖 Deep Dive: Models & Agents
 
-Unlike standard "wrapper" AI applications, ResuMatch uses an adversarial, multi-agent architecture to ensure factual accuracy and high ATS scores without fabricating experience.
+The architecture deliberately distributes workloads across multiple specific models to balance speed, reasoning capability, and cost:
 
-1. **Pre-Screen Agent (The Guardrail):** Instantly analyzes the base resume against the JD to calculate mathematical impossibilities (e.g., 1 year of experience vs. a strict 10-year requirement). If a massive reality gap exists, it alerts the user and short-circuits the process.
-2. **Matcher Agent (The Drafter):** Re-writes resume bullet points to align perfectly with JD keywords, utilizing an internal `<scratchpad>` to plan its semantic mapping before outputting the final text.
-3. **Critic Agent (The Enforcer):** An independent LLM that mathematically scores the Matcher's draft out of 100. It strictly enforces the **Zero-Hallucination Policy**. If it detects AI "fluff" or fabricated skills, it scores the draft `0/100`, issues a `mandatory_deletions` array, and forces the Matcher to re-draft.
-4. **Iteration Limit:** The loop runs for a maximum of 3 iterations. If the Critic determines that it is ethically impossible to raise the score without hallucinating, it gracefully terminates the loop early to save compute resources.
+### 1. Security & Guardrails (`gemini-3.1-flash-lite`)
+- **InputGuardrailAgent:** Inspects initial inputs for prompt injections or garbage text.
+- **PreScreenAgent:** Does the initial math to ensure the candidate has a realistic chance at the job (e.g., catching a 1-year junior applying for an 8-year senior role).
+- **OutputGuardrailAgent:** Scans the final generated resume to ensure no AI meta-text (like `<scratchpad>`) or hallucinated credentials leaked through.
+
+### 2. The Core Drafting Engine (`llama-3.3-70b-versatile` via Groq)
+- **MatcherAgent:** The workhorse of the application. Driven by the Groq LPU inference engine for extreme speed, this agent maps the candidate's existing factual experience to the target Job Description keywords.
+- **GapAnalystAgent:** Runs in parallel to calculate the exact missing skills between the candidate and the JD.
+
+### 3. The Strict Evaluator (`gemini-3.6-flash`)
+- **CriticAgent:** Uses Google's highly capable 3.6 Flash model to act as a ruthless grader. It scores the Matcher's draft out of 100. If it detects *any* hallucination or AI "fluff", it forces the Matcher to retry via strict `mandatory_deletions` arrays.
+
+### 4. Interactive Agents (`gemini-3.5-flash-lite`)
+- **InterviewerAgent:** Powers the mock interview. Uses a fast-response model to keep latency low while having a dynamic voice conversation with the user over WebSockets.
+- **StudyAgent:** Generates instantaneous study guides when a user clicks on a missing skill in their Gap Analysis.
 
 ---
 
@@ -106,12 +155,3 @@ In your GitHub repository, navigate to **Settings -> Secrets and variables -> Ac
 ### Phase 4: Deploy
 Simply commit and push your code to the `main` branch. 
 GitHub Actions will automatically SSH into your EC2 instance, install Docker (if missing), inject your secrets into a secure `.env` file, pull the latest image from ECR, and orchestrate the container via `docker-compose`.
-
----
-
-## 🗺️ Roadmap & Future Capabilities
-
-- **Auth Integration:** Implement JWT-based authentication for user accounts.
-- **Mock Interview Context:** Pipe the final generated ATS gap-analysis directly into the AI Interviewer's system prompt to dynamically grill the user on their weakest skills.
-- **Cloud Architecture Migration:** Move from a single EC2 instance to an Elastic Container Service (ECS) Fargate cluster for infinite horizontal scaling and zero-downtime rolling updates.
-- **WebRTC Upgrade:** Transition the Mock Interview AI from a polling WebSocket setup to real-time WebRTC for lower latency voice interactions.
