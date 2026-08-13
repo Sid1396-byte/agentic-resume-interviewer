@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: resume-tailor
+    env: docker
+    dockerfilePath: ./render_deployment/Dockerfile
+    rootDir: .
+    plan: free
+    healthCheckPath: /
+    envVars:
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: TAVILY_API_KEY
+        sync: false
