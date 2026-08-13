@@ -40,12 +40,23 @@ jobs:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
         run: |
           echo "$PRIVATE_KEY" > private_key && chmod 600 private_key
+          # Create directory and copy docker-compose.yml to the server
+          ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} 'mkdir -p /home/ubuntu/resume-tailor'
+          scp -o StrictHostKeyChecking=no -i private_key docker-compose.yml ${USER_NAME}@${HOSTNAME}:/home/ubuntu/resume-tailor/
+          
+          # Connect and deploy
           ssh -o StrictHostKeyChecking=no -i private_key ${USER_NAME}@${HOSTNAME} '
-            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
-            mkdir -p /home/ubuntu/resume-tailor
+            # Auto-install missing dependencies just in case
+            sudo apt-get update
+            sudo apt-get install -y awscli docker.io docker-compose
+            sudo systemctl enable --now docker
+            sudo usermod -aG docker ubuntu
+            
+            # Authenticate and deploy
+            aws ecr get-login-password --region ${{ secrets.AWS_REGION }} | sudo docker login --username AWS --password-stdin ${{ steps.login-ecr.outputs.registry }}
             cd /home/ubuntu/resume-tailor
             export ECR_REGISTRY='${ECR_REGISTRY}'
             export ECR_REPOSITORY=resume-tailor
-            docker-compose pull
-            docker-compose up -d
+            sudo docker-compose pull
+            sudo docker-compose up -d
           '
