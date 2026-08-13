@@ -56,6 +56,9 @@ graph TD
         UserInterview["User Joins WebRTC/WebSocket Session"]:::user --> Interviewer["AI Interviewer Agent<br/>(gemini-3.1-flash-live-preview)"]:::agent
         User["Base Resume & JD"] -. "Feeds context to" .-> Interviewer
         Interviewer --> LiveTranscript["Live Interview Transcript UI"]:::output
+        LiveTranscript -. "On End Interview" .-> InterviewEvaluator["Interview Evaluator Agent<br/>(gemini-3.5-flash-lite)"]:::eval
+        User -. "Feeds context to" .-> InterviewEvaluator
+        InterviewEvaluator --> ScorecardUI["Final Scorecard UI"]:::output
     end
 ```
 
@@ -79,6 +82,7 @@ The architecture deliberately distributes workloads across multiple specific mod
 
 ### 4. Interactive Agents
 - **InterviewerAgent (`gemini-3.1-flash-live-preview`):** Powers the mock interview. Driven by the new Gemini Live API (Bidi/WebRTC), this agent has a dynamic voice conversation with the user. **Note:** It explicitly uses the user's *original Base Resume and JD* as its context (not the drafted resume) to test the candidate's actual authentic knowledge.
+- **InterviewEvaluatorAgent (`gemini-3.5-flash-lite`):** Acts as a Senior Technical Recruiter at the end of the simulation. It analyzes the complete live transcript against the JD and Resume to calculate a final score out of 100 and provide constructive feedback on strengths and weaknesses.
 - **StudyAgent (`gemini-3.5-flash-lite` + MCP):** Generates instantaneous study guides when a user clicks on a missing skill in their Gap Analysis. It connects to a **Tavily MCP Server** over the Model Context Protocol to execute live web searches and fetch up-to-date documentation for the requested skill.
 
 ---
