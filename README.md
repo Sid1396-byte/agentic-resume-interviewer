@@ -124,6 +124,31 @@ To run this application on your local machine:
 
 This repository includes a fully automated CI/CD pipeline (`.github/workflows/deploy.yml`) that pushes your code to an AWS EC2 instance anytime you commit to the `main` branch. 
 
+### CI/CD & Docker Deployment Architecture
+```mermaid
+graph LR
+    classDef git fill:#24292e,stroke:#fff,stroke-width:2px,color:#fff
+    classDef action fill:#2088FF,stroke:#fff,stroke-width:2px,color:#fff
+    classDef aws fill:#FF9900,stroke:#fff,stroke-width:2px,color:#fff
+    classDef docker fill:#0db7ed,stroke:#fff,stroke-width:2px,color:#fff
+    classDef server fill:#3F8624,stroke:#fff,stroke-width:2px,color:#fff
+
+    Dev["Developer<br>(git push)"]:::git --> GH["GitHub Actions<br>(deploy.yml)"]:::action
+    
+    subgraph "Continuous Integration"
+        GH --> Build["Build Docker Image"]:::docker
+        Build --> Auth["Authenticate with AWS IAM"]:::aws
+        Auth --> ECR["Push to AWS ECR Registry"]:::aws
+    end
+
+    subgraph "Continuous Deployment"
+        ECR -.-> EC2["AWS EC2 Instance (Ubuntu)"]:::server
+        GH --> SSH["SSH into EC2"]:::server
+        SSH --> Env["Inject .env Secrets (API Keys)"]:::server
+        Env --> Compose["docker compose up -d"]:::docker
+    end
+```
+
 To recreate the production environment from scratch, follow these exact steps:
 
 ### Phase 1: AWS Infrastructure Setup
