@@ -33,7 +33,7 @@ graph TD
     end
 
     subgraph "2. Advanced Multi-Agent Tailoring Loop (Max 3 Iterations)"
-        PreScreen -- "Passed" --> Matcher["Matcher Agent - Drafter<br/>(gpt-oss-120b via Groq)"]:::agent
+        PreScreen -- "Passed" --> Matcher["Matcher Agent - Drafter<br/>(openai/gpt-oss-120b via Groq)"]:::agent
         Matcher --> Critic["Critic Agent - Evaluator<br/>(gemini-3.6-flash)"]:::eval
         Critic -- "Score < 80 / Hallucinations Detected" --> MandatoryDeletions["Inject Mandatory Deletions"]:::api
         MandatoryDeletions --> Matcher
@@ -46,7 +46,7 @@ graph TD
     end
 
     subgraph "4. Background Telemetry & Study Engine"
-        FastAPI -.-> GapAnalyst["Gap Analyst Node<br/>(gpt-oss-120b via Groq)"]:::agent
+        FastAPI -.-> GapAnalyst["Gap Analyst Node<br/>(openai/gpt-oss-120b via Groq)"]:::agent
         GapAnalyst --> GapUI["Gap Analysis UI Stream"]:::output
         GapUI -. "User clicks missing skill" .-> StudyAgent["Study Guide Agent<br/>(gemini-3.5-flash-lite)"]:::agent
         StudyAgent --> TavilyMCP["Tavily MCP Server<br/>(Live Web Search)"]:::api
@@ -73,7 +73,7 @@ The architecture deliberately distributes workloads across multiple specific mod
 - **PreScreenAgent:** Does the initial math to ensure the candidate has a realistic chance at the job (e.g., catching a 1-year junior applying for an 8-year senior role).
 - **OutputGuardrailAgent:** Scans the final generated resume to ensure no AI meta-text (like `<scratchpad>`) or hallucinated credentials leaked through.
 
-### 2. The Core Drafting Engine (`gpt-oss-120b` via Groq)
+### 2. The Core Drafting Engine (`openai/gpt-oss-120b` via Groq)
 - **MatcherAgent:** The workhorse of the application. Driven by the Groq LPU inference engine for extreme speed, this agent maps the candidate's existing factual experience to the target Job Description keywords.
 - **GapAnalystAgent:** Runs in parallel to calculate the exact missing skills between the candidate and the JD.
 

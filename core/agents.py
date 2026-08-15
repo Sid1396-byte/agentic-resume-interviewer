@@ -11,14 +11,14 @@ from mcp.client.stdio import stdio_client, StdioServerParameters
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 class BaseAgent:
-    def __init__(self, api_key: str, model: str = "gpt-oss-120b"):
+    def __init__(self, api_key: str, model: str = "openai/gpt-oss-120b"):
         self.client = genai.Client(api_key=api_key)
         self.model = model
         self.groq_api_key = os.environ.get("GROQ_API_KEY")
 
     @retry(stop=stop_after_attempt(4), wait=wait_exponential(multiplier=2, min=2, max=10))
     def _call_llm(self, system_prompt: str, user_prompt: str) -> str:
-        if "llama" in self.model:
+        if "llama" in self.model or "gpt-oss" in self.model or "qwen" in self.model:
             url = "https://api.groq.com/openai/v1/chat/completions"
             headers = {
                 "Authorization": f"Bearer {self.groq_api_key}",
