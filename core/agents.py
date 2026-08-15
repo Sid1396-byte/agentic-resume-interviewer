@@ -11,7 +11,7 @@ from mcp.client.stdio import stdio_client, StdioServerParameters
 from tenacity import retry, stop_after_attempt, wait_exponential
 
 class BaseAgent:
-    def __init__(self, api_key: str, model: str = "llama-3.3-70b-versatile"):
+    def __init__(self, api_key: str, model: str = "gpt-oss-120b"):
         self.client = genai.Client(api_key=api_key)
         self.model = model
         self.groq_api_key = os.environ.get("GROQ_API_KEY")
